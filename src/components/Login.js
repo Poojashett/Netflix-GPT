@@ -1,33 +1,95 @@
 import Header from "./Header";
-import { useState } from "react"
+import { useRef, useState} from "react";
+import { Validation } from "../utils/Validation"
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "../utils/Auth";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addUser} from "../utils/userSlice";
+
+
 
 
 const Login = () => {
 
+
     const [issigninForm, setissigninForm] = useState([true]);
+    const [errormessage, setErrormessage] = useState([""]);
+
+
+
+    const email = useRef(null);
+    const passowrd = useRef(null);
+    const name = useRef(null);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
 
     const toggleSignupForm = () => {
         setissigninForm(!issigninForm);
-        console.log(issigninForm);
+    }
+
+    const handleButtonClick = () => {
+        const message = Validation(email?.current?.value, passowrd?.current?.value);
+        setErrormessage(message);
+        if (message) return;
+
+        if (!issigninForm) {
+            createUserWithEmailAndPassword(auth, email?.current?.value, passowrd?.current?.value)
+                .then((userCredential) => {
+                    const user = userCredential?.user;
+                    updateProfile(user, {
+                        displayName: name?.current?.value, photoURL: "https://avatars.githubusercontent.com/u/88236196?v=4"
+                    }).then(() => {
+                        const { uid, email, displayName, photoURL } = auth.currentUser;
+                        dispatch(addUser({ uid: uid, email: email, displayName: displayName, photoURL: photoURL }));
+                        navigate("/browse");
+                    }).catch((error) => {
+                        setErrormessage(error?.message);
+                    });
+                    
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    setErrormessage(errorCode + " "+ errorMessage);
+                });
+        } else {
+            //sign in
+            signInWithEmailAndPassword(auth, email.current.value, passowrd.current.value)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    navigate("/browse");
+                    console.log('user: ', user);
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    setErrormessage(errorCode + " " + errorMessage);
+                });
+        }
+
+
     }
 
     return (
         <div>
             <Header />
             <div>
-                <form className="bg-opacity-80 bg-black absolute p-12 w-[35%] my-36 mx-auto right-0 left-0 text-white">
+                <form onSubmit={(event) => event.preventDefault()} className="bg-opacity-80 bg-black absolute p-12 w-[35%] my-36 mx-auto right-0 left-0 text-white">
                     <h1 className="font-bold text-3xl py-2">
                         {issigninForm ? "Sign In " : "Sign Up"}
                     </h1>
 
                     {!issigninForm && (
-                        <input type="text" placeholder="Name" className="p-4 my-4 w-full bg-black bg-opacity-80 border border-gray-400" />
+                        <input ref={name} type="text" placeholder="Name" className="p-4 my-4 w-full bg-black bg-opacity-80 border border-gray-400" />
                     )
                     }
 
-                    <input type="text" placeholder="Email Address" className="p-4 my-4 w-full bg-black bg-opacity-80 border border-gray-400" />
-                    <input type="password" placeholder="Password" className="p-4 my-4 w-full bg-black bg-opacity-80 border border-gray-400" />
-                    <button className="p-4 my-2 bg-red-700 w-full rounded">
+                    <input type="text" ref={email} placeholder="Email Address" className="p-4 my-4 w-full bg-black bg-opacity-80 border border-gray-400" />
+                    <input type="password" ref={passowrd} placeholder="Password" className="p-4 my-4 w-full bg-black bg-opacity-80 border border-gray-400" />
+                    <p className="text-red-500">{errormessage}</p>
+                    <button className="p-4 my-2 bg-red-700 w-full rounded" onClick={handleButtonClick}>
                         {issigninForm ? " Sign In" : "Sign Up"}
                     </button>
 
