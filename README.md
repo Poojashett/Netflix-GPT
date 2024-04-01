@@ -9,3 +9,6 @@
 *sign out
 *sign up
 8redux store
+*auth handled  -inside header , bcoz header is inside the route provider
+*TMDB API - for movies
+*use custom hooks
