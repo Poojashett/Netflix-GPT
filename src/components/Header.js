@@ -36,12 +36,12 @@ const Header = () => {
     }
 
     return (
-        <div className="px-10 py-10 bg-gradient-to-b from-black absolute w-full flex justify-between items-center">
-            <img className="w-36" src={NETFLIX_LOGO} alt="logo" />
+        <div className="absolute w-screen px-8 py-2 bg-gradient-to-b from-black z-10 flex flex-col md:flex-row justify-between">
+            <img className="w-44 mx-auto md:mx-0" src={NETFLIX_LOGO} alt="logo" />
             {(user &&
-                <div className="flex items-center">
+                <div className="flex p-2 justify-between">
                     <img className="w-10 h-10 shadow-md mr-4 shadow-black" src={user?.photoURL} alt="logo" />
-                    <p className="text-white  cursor-pointer" onClick={handleSignout}>Sign out</p>
+                    <p className="font-bold text-white cursor-pointer pt-3" onClick={handleSignout}>Sign out</p>
                 </div>)
             }
         </div>
@@ -49,3 +49,5 @@ const Header = () => {
 }
 
 export default Header;
+
+
